@@ -16,8 +16,12 @@ char *read_entire_file(const char *path);
  * path:line:column: message. True on success. */
 bool assemble_file(const char *path, const struct mb_spec *fallback, struct mb_asm_result *result);
 
-/* Accepts a file path or an id like "lamp/blink" (challenges/<id>.txt).
- * Prints errors. True on success. */
+/* Records where the binary lives, for load_challenge(). Call first. */
+void set_program_path(const char *argv0);
+
+/* Accepts a file path or an id like "lamp/blink". An id is looked up
+ * under $MAMBRINO_CHALLENGES, then the challenges/ directory next to the
+ * binary's bin/, then ./challenges. Prints errors. True on success. */
 bool load_challenge(const char *path_or_id, struct mb_challenge *out);
 
 #endif

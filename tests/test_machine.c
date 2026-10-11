@@ -29,6 +29,7 @@ TEST(lights_and_ticks) {
     ASSERT_EQ_INT(mb_read_port(m, 0), 0, "light off");
     ASSERT_EQ_INT(mb_step(m), MB_HALTED, "HALT stops");
     ASSERT_EQ_INT(mb_get_ticks(m), 3, "HALT takes no tick");
+    ASSERT_EQ_INT(mb_get_pc(m), 3, "PC stays on the HALT");
     ASSERT_EQ_INT(mb_step(m), MB_HALTED, "halted is sticky");
     ASSERT_EQ_INT(mb_get_ticks(m), 3, "no ticks after halt");
     mb_destroy(m);

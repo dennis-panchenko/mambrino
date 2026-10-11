@@ -55,8 +55,7 @@ again:  ON
 ```
 $ bin/mambrino run --cycles 12 blink.asm
 LOOP, 4 bytes
-led
-     0  #..#..#..#..
+led    0  #..#..#..#..
 still running after 12 ticks (the cycle limit)
 ```
 

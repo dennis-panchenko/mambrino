@@ -27,7 +27,8 @@ static void usage(FILE *out) {
             "  mambrino verify CHALLENGE FILE.asm check a solution\n"
             "  mambrino repl [-m NAME] [FILE.asm] interactive debugger\n"
             "\n"
-            "CHALLENGE is a file or an id such as lamp/blink (challenges/<id>.txt).\n",
+            "CHALLENGE is a file or an id such as lamp/blink, found in the challenges/\n"
+            "directory beside bin/ (or in $MAMBRINO_CHALLENGES if set).\n",
             DEFAULT_RUN_CYCLES);
 }
 
@@ -119,8 +120,11 @@ static int cmd_run(int argc, char **argv) {
     if (status == MB_RUNNING) {
         printf("still running after %u ticks (the cycle limit)\n", (unsigned)length);
     } else {
-        printf("%s after %u ticks, at address %u\n", mb_status_text(status), (unsigned)length,
-               (unsigned)mb_get_pc(m));
+        printf("%s", mb_status_text(status));
+        if (status != MB_END_OF_MEMORY) {
+            printf(" (address %u)", (unsigned)mb_get_pc(m));
+        }
+        printf(" after %u tick%s\n", (unsigned)length, length == 1 ? "" : "s");
     }
     free(trace);
     mb_destroy(m);
@@ -129,7 +133,8 @@ static int cmd_run(int argc, char **argv) {
 }
 
 static void print_challenge(const struct mb_challenge *ch) {
-    printf("%s (%s)\n\n%s\n", ch->title, ch->spec->name, ch->text);
+    printf("%s (%s)\n\n%s\n\n", ch->title, ch->spec->name, ch->text);
+    print_target(stdout, ch);
     if (ch->size_limit < ch->spec->memory_size) {
         printf("\nLimit: %u bytes.\n", (unsigned)ch->size_limit);
     }
@@ -171,6 +176,9 @@ static int cmd_verify(int argc, char **argv) {
         printf("PASS  %s: %u bytes, %u tick%s\n", ch->title, (unsigned)r.size, (unsigned)r.ticks, r.ticks == 1 ? "" : "s");
     } else {
         printf("FAIL  %s: %s\n", ch->title, r.message);
+        if (r.has_comparison) {
+            print_comparison(stdout, &r);
+        }
     }
     free(source);
     free(ch);
@@ -194,6 +202,7 @@ static int cmd_repl(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+    set_program_path(argv[0]);
     if (argc < 2) {
         usage(stderr);
         return 2;

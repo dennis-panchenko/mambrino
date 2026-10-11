@@ -88,6 +88,37 @@ TEST(exact_ticks) {
     ASSERT_TRUE(verdict("ON\nWAIT\nOFF\nWAIT\n", false, "should stop after 3 ticks"), "late");
 }
 
+TEST(comparison_window) {
+    ASSERT_TRUE(parse("machine LAMP\nexpect led 1 0*\n"), "parses");
+    ASSERT_TRUE(verdict("ON\nWAIT\nOFF\n", false, "tick 1"), "fails at tick 1");
+    ASSERT_TRUE(res.has_comparison, "has comparison");
+    const uint8_t want[] = {1, 0, 0}, got[] = {1, 1, 0};
+    ASSERT_EQ_INT(res.want_count, 3, "want runs as long as the program did (hold)");
+    ASSERT_TRUE(memcmp(res.want, want, 3) == 0, "want values");
+    ASSERT_EQ_INT(res.got_count, 3, "got count");
+    ASSERT_TRUE(memcmp(res.got, got, 3) == 0, "got values");
+    ASSERT_EQ_INT(res.marked, 1, "marks tick 1");
+    ASSERT_EQ_INT(res.shown_from, 0, "from the start");
+
+    ASSERT_TRUE(parse("machine LAMP\nexpect led 1*3 0\n"), "parses");
+    ASSERT_TRUE(verdict("ON\nWAIT\n", false, "stopped after 2 ticks"), "stops early");
+    ASSERT_EQ_INT(res.want_count, 4, "whole pattern");
+    ASSERT_EQ_INT(res.got_count, 2, "what ran");
+    ASSERT_EQ_INT(res.marked, -1, "no single wrong tick");
+
+    ASSERT_TRUE(parse("machine LOOP\ncycles 200\nrepeat led 1 0\n"), "parses");
+    ASSERT_TRUE(verdict("a: ON\nOFF\nJMP a\n", false, "tick 2"), "loop mismatch");
+    ASSERT_TRUE(parse("machine COUNT\ncycles 200\nexpect led 1*100 0*\n"), "parses");
+    ASSERT_TRUE(verdict("ON\na: JMP a\n", false, "tick 100"), "late mismatch");
+    ASSERT_EQ_INT(res.shown_from, 52, "48 ticks of lead-up");
+    ASSERT_EQ_INT(res.marked, 48, "mark inside the window");
+    ASSERT_EQ_INT(res.got_count, 64, "window size");
+
+    ASSERT_TRUE(parse("machine COUNT\nsequence led 0 1 0\n"), "parses");
+    ASSERT_TRUE(verdict("HALT\n", false, "came on 0 times"), "sequence");
+    ASSERT_TRUE(!res.has_comparison, "no tick comparison for sequences");
+}
+
 TEST(hold_and_timeout) {
     ASSERT_TRUE(parse("machine LOOP\ncycles 20\nexpect led 1 0*\n"), "parses");
     ASSERT_TRUE(verdict("ON\nOFF\nWAIT\nWAIT\n", true, ""), "hold any length");
@@ -134,6 +165,7 @@ int main(void) {
     RUN_TEST(expands_items);
     RUN_TEST(parse_errors);
     RUN_TEST(exact_ticks);
+    RUN_TEST(comparison_window);
     RUN_TEST(hold_and_timeout);
     RUN_TEST(repeat_with_lead_in);
     RUN_TEST(sequence_and_cases);

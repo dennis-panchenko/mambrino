@@ -40,7 +40,7 @@ struct mb_op {
     enum mb_operand operand;
     const char *summary; /* one line for the machine's reference card */
     /* Runs the instruction. PC already points past it, so a jump just
-     * overwrites m->pc. */
+     * overwrites m->pc. (HALT steps it back: see ops.c.) */
     void (*exec)(struct mb_machine *m, uint8_t operand);
 };
 

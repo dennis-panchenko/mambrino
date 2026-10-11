@@ -70,7 +70,8 @@ tests/             unit tests, CLI/REPL scripts, a reference solution
 - **Instructions**: one byte, or two when the instruction has an operand.
 - **Time**: every instruction takes one tick, including jumps. HALT takes
   none; it ends the run.
-- **Stopping**: HALT stops the machine. Opcode 0x00 is HALT, so empty
+- **Stopping**: HALT stops the machine and leaves the PC on the HALT
+  itself, so a debugger shows where the program stopped. Opcode 0x00 is HALT, so empty
   memory stops a program that runs into it. Running past the last byte
   also stops the machine; that is not an error.
 - **Bad bytes**: a byte that is not an instruction on this machine stops

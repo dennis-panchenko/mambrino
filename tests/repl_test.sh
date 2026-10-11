@@ -28,7 +28,7 @@ check "breakpoints stop run" "$out" "break at 2
 pc 2    A=3    led off  tick 1     next: ON
 break at 2
 pc 2    A=2    led off  tick 5     next: ON
-pc 8    A=0    led off  tick 13    stopped at HALT"
+pc 7    A=0    led off  tick 13    stopped at HALT"
 
 out="$(printf 'list\n' | "$BIN" repl tests/fixtures/count3.asm | sed 's/mambrino> //g' | sed 's/ *$//' | sed '/^$/d' | tail -7)"
 check "list shows code with line numbers" "$out" ">    0  20 03  SET 3       line 2

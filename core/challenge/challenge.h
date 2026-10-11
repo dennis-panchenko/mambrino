@@ -87,6 +87,8 @@ struct mb_challenge_error {
  * *error. Errors here are the puzzle author's, not the player's. */
 bool mb_challenge_parse(const char *text, struct mb_challenge *out, struct mb_challenge_error *error);
 
+#define MB_VERIFY_SHOWN 64
+
 struct mb_verify_result {
     bool passed;
     /* On failure: which case (1-indexed, 0 if the program didn't
@@ -96,6 +98,19 @@ struct mb_verify_result {
     /* Always filled when the program assembled. */
     uint16_t size;   /* program bytes */
     uint32_t ticks;  /* total over all cases */
+
+    /* On a tick-by-tick failure, the port's wanted and actual values
+     * around the problem, for a host to draw side by side. Both start at
+     * tick shown_from. want is shorter than got when the program should
+     * have stopped sooner, longer when it stopped too soon. */
+    bool has_comparison;
+    uint8_t port;
+    uint32_t shown_from;
+    uint8_t want[MB_VERIFY_SHOWN];
+    uint16_t want_count;
+    uint8_t got[MB_VERIFY_SHOWN];
+    uint16_t got_count;
+    int marked; /* index in want/got of the first wrong tick, or -1 */
 };
 
 void mb_verify(const struct mb_challenge *challenge, const char *source, struct mb_verify_result *result);

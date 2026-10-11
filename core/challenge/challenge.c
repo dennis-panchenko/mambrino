@@ -450,47 +450,83 @@ static bool say_bad_stop(struct mb_verify_result *r, const char *prefix, const s
     return true;
 }
 
+/* The expected value at tick t, or false if the program should have
+ * stopped by then. */
+static bool want_at(const struct mb_case *c, uint32_t t, uint8_t *want) {
+    if (t < c->value_count) {
+        *want = c->values[t];
+    } else if (c->loop_count > 0) {
+        *want = c->loop[(t - c->value_count) % c->loop_count];
+    } else if (c->has_hold) {
+        *want = c->hold;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+/* Fills r's want/got window around tick `focus`, where things went
+ * wrong: up to 48 ticks of lead-up and 16 after. Want runs as long as the
+ * program should; with a hold, as long as the program actually ran. */
+static void show_comparison(const struct mb_case *c, const struct run *run, uint32_t focus,
+                            bool mark, struct mb_verify_result *r) {
+    uint32_t from = focus > 48 ? focus - 48 : 0;
+    uint32_t end = focus + 16;
+    if (end > from + MB_VERIFY_SHOWN) {
+        end = from + MB_VERIFY_SHOWN;
+    }
+    uint32_t want_end = c->loop_count > 0 ? end
+                        : c->has_hold    ? (run->length > c->value_count ? run->length : c->value_count)
+                                         : c->value_count;
+    r->has_comparison = true;
+    r->shown_from = from;
+    r->port = c->port;
+    r->marked = mark ? (int)(focus - from) : -1;
+    for (uint32_t t = from; t < end && t < want_end; t++) {
+        want_at(c, t, &r->want[r->want_count++]);
+    }
+    for (uint32_t t = from; t < end && t < run->length; t++) {
+        r->got[r->got_count++] = run->trace[t];
+    }
+}
+
 static bool check_ticks(const struct mb_case *c, const struct mb_port *port, const struct run *run,
                         uint32_t cycles, struct mb_verify_result *r, const char *prefix) {
     for (uint32_t t = 0; t < run->length; t++) {
         uint8_t want;
-        if (t < c->value_count) {
-            want = c->values[t];
-        } else if (c->loop_count > 0) {
-            want = c->loop[(t - c->value_count) % c->loop_count];
-        } else if (c->has_hold) {
-            want = c->hold;
-        } else {
+        if (!want_at(c, t, &want)) {
             say(r, prefix, "the program should stop after %u ticks, but it keeps going.",
                 (unsigned)c->value_count);
+            show_comparison(c, run, t, true, r);
             return false;
         }
         if (run->trace[t] != want) {
             say_mismatch(r, prefix, port, t, want, run->trace[t]);
+            show_comparison(c, run, t, true, r);
             return false;
         }
     }
+    bool ok = true;
     if (say_bad_stop(r, prefix, run)) {
-        return false;
-    }
-    if (c->loop_count > 0) {
+        ok = false;
+    } else if (c->loop_count > 0) {
         if (run->status != MB_RUNNING) {
             say(r, prefix, "the program stopped after %u ticks; this pattern should go on forever.",
                 (unsigned)run->length);
-            return false;
+            ok = false;
         }
-        return true;
-    }
-    if (run->status == MB_RUNNING) {
+    } else if (run->status == MB_RUNNING) {
         say(r, prefix, "the program was still running after %u ticks; it should stop.", (unsigned)cycles);
-        return false;
-    }
-    if (run->length < c->value_count) {
+        ok = false;
+    } else if (run->length < c->value_count) {
         say(r, prefix, "the program stopped after %u ticks, but the pattern runs for %u.",
             (unsigned)run->length, (unsigned)c->value_count);
-        return false;
+        ok = false;
     }
-    return true;
+    if (!ok) {
+        show_comparison(c, run, run->length > 0 ? run->length - 1 : 0, false, r);
+    }
+    return ok;
 }
 
 static unsigned count_ones(const uint8_t *v, unsigned n) {

@@ -6,8 +6,11 @@
  * Machines with more ports or registers will get their own instructions
  * rather than overloading these. */
 
+/* Steps the PC back onto the HALT, so a stopped machine shows where it
+ * stopped rather than the address after it. */
 static void op_halt(struct mb_machine *m, uint8_t operand) {
     (void)operand;
+    m->pc--;
     m->status = MB_HALTED;
 }
 
