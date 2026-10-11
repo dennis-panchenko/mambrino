@@ -1,0 +1,3 @@
+.machine LAMP
+        ON
+        HALT

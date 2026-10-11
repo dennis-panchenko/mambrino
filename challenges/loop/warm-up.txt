@@ -1,0 +1,8 @@
+; The loop's own ON can be the last tick of the glow.
+machine LOOP
+title   Warm-up
+text    Glow for four ticks. Then go dark for two ticks and on for one,
+text    over and over, forever.
+cycles  60
+expect  led 1*4
+repeat  led 0*2 1

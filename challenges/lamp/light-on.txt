@@ -1,0 +1,5 @@
+; The first puzzle. One instruction does it.
+machine LAMP
+title   Light on
+text    Turn the light on and stop.
+expect  led 1*

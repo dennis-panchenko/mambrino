@@ -1,0 +1,6 @@
+machine LOOP
+title   Heartbeat
+text    Two quick beats, then a rest, forever. Each beat is on for one
+text    tick and off for one; the rest adds four more ticks of dark.
+cycles  64
+repeat  led 1 0 1 0*5

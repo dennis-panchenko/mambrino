@@ -1,0 +1,6 @@
+; The JMP's tick replaces a WAIT.
+machine LOOP
+title   Even rhythm
+text    Blink forever: on for two ticks, off for two.
+cycles  60
+repeat  led 1*2 0*2

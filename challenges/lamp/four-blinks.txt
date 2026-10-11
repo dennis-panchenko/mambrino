@@ -1,0 +1,7 @@
+; Fits only if the player notices the last OFF needs no WAIT and HALT is
+; optional: running off the end of memory stops the machine too.
+machine LAMP
+title   Four blinks
+text    The same rhythm as before, four times: on for two ticks, off for
+text    two. Leave it off at the end. LAMP has 16 bytes of memory.
+expect  led (1*2 0*2)*3 1*2 0*

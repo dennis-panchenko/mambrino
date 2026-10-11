@@ -1,0 +1,6 @@
+; WAIT is the point here: each blink lasts two ticks.
+machine LAMP
+title   Three blinks
+text    Blink the light three times. Each blink is on for two ticks,
+text    then off for two. Leave it off at the end.
+expect  led (1*2 0*2)*2 1*2 0*

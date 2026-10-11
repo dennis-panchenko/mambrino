@@ -1,0 +1,6 @@
+; Unrolled, ten blinks take at least 20 bytes; COUNT has 16.
+machine COUNT
+title   Ten blinks
+text    Blink the light ten times, then stop with the light off. How long
+text    each blink lasts is up to you.
+sequence led 0 (1 0)*10

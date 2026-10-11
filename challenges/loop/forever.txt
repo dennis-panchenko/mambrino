@@ -1,0 +1,7 @@
+machine LOOP
+title   Forever
+text    Blink forever: on for one tick, off for two.
+text
+text    JMP takes a tick, like every other instruction.
+cycles  60
+repeat  led 1 0*2

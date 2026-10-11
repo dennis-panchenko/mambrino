@@ -1,0 +1,5 @@
+; A DEC/JNZ loop takes two ticks a turn, so an odd glow needs one more.
+machine COUNT
+title   Long glow
+text    Keep the light on for exactly 25 ticks, then turn it off and stop.
+expect  led 1*25 0*

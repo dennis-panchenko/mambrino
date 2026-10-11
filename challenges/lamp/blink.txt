@@ -1,0 +1,4 @@
+machine LAMP
+title   One blink
+text    Blink the light once: on for one tick, then off. Leave it off.
+expect  led 1 0*

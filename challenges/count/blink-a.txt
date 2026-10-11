@@ -1,0 +1,13 @@
+machine COUNT
+title   Blink A times
+text    When the program starts, register A holds a number from 1 to 9.
+text    Blink the light that many times, then stop with the light off.
+case
+set A 1
+sequence led 0 1 0
+case
+set A 3
+sequence led 0 (1 0)*3
+case
+set A 7
+sequence led 0 (1 0)*7
